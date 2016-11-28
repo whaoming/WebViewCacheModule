@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--   <title>我的生活</title> -->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- <link rel="shortcut icon" href="/favicon.ico"> -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet"
+          href="http://g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+    <link rel="stylesheet"
+          href="http://g.alicdn.com/msui/sm/0.6.2/css/sm-extend.min.css">
+</head>
+<body style="background: #fff">
+<div id="info_img">
+
+    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+</div>
+                    <!--<img id="info_demo" src="" height="70" width="70"/>-->
+                    <!--<img id="info_demo2" src="" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+                    <!--<img src="file:///storage/sdcard0/DCIM/Camera/IMG_20161123_152042.jpg" height="70" width="70"/>-->
+<script type='text/javascript'
+        src='http://g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript'
+        src='http://g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript'
+        src='http://g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js'
+        charset='utf-8'></script>
+<script>
+		$.init();
+</script>
+<script type="text/javascript" src="js/JsBridge.js"></script>
+<script type="text/javascript">
+		registerBridge(MyInit, register);
+		function MyInit(message, responseCallback) {
+
+			responseCallback('base64df');
+		}
+		function register(bridge) {
+            bridge.registerHandler("adapter", function(data,
+					responseCallback) {
+					showLog("asdasdas");
+					showLog("data:"+data);
+				    MyHere(data);
+			});
+		}
+
+		function MyHere(pars){
+            //$("#info_img").html("");
+		    $("#info_img").prepend(pars);
+		}
+
+
+</script>
+</body>
+</html>
