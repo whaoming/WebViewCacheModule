@@ -1,5 +1,3 @@
-# WebViewCacheModule
-webview contrast display picture case
 # 前言
 先讲讲为什么会有这篇blog，话说前几天做个模块，要求是这样的：
 做一个webview的页面，功能类似于微信发朋友圈一样，要求能上传本地图片到webview中进行展示，并按用户喜好添加和删除，当用户点击发布的时候，将这些图片上传至阿里云oss，收到oss响应后封装页面信息提交给服务器
@@ -84,7 +82,9 @@ base64编码大家应该都有接触过，还记得宝宝当年刚撸项目的�
     }
 ```
 
-## 对比
+## 方案的对比
+图一为第一种方案，图二为第二种方案
+![这里写图片描述](http://img.blog.csdn.net/20161129002425992)       ![这里写图片描述](http://img.blog.csdn.net/20161129002439915)
 
  1. 其实还有通过shouldInterceptRequest方法来显示图片，在这里其实跟第一种方案的原理一样(放到后面讲)
  2. 总体来说第一种方案的速度是比较快的，但是第一种方案有一个缺点就是如果是服务器的html的文件，是无法读取本地文件的
@@ -177,19 +177,19 @@ public WebResourceResponse(String mimeType, String encoding, InputStream data) {
         throw new RuntimeException("Stub!");
     }
 ```
-通过传入一个流InputStream来实现发送数据流给webview，那么我现在的思路是这样的：
+通过传入一个流InputStream来实现发送数据流给webview，那么我现在的思路是这样的：  
 
  - 取得本地图片路径之后，直接跟第一种方案一样生成img便签，例如：
-	 `<img src=\"file://sdcard0/picture/xxx.jpg\" height=\"70\" width=\"70\"/>`
+`<img src=\"file://sdcard0/picture/xxx.jpg\" height=\"70\" width=\"70\"/>`
  - 然后在webview加载到此标签的时候，就会被shouldInterceptRequest方法拦截
  - 那么此时我们要解析含有"file://"的url，解析本地路径地址
- - 调用我们的缓存系统，传入此path, 返回byte[],解析成inputStream
+ - 调用我们的缓存系统，传入此path, (缓存+压缩)系统返回byte[],解析成inputStream
  - 构造WebResourceResponse返回
 
-进过这样一个流程就能更快的展示我们的图片：
-
+那么核心的代码就是：  
 ```
- class MyWebViewClient extends BridgeWebViewClient {
+//自定义的WebViewClient,重载shouldInterceptRequest方法
+class MyWebViewClient extends BridgeWebViewClient {
         public MyWebViewClient(BridgeWebView webView) {
             super(webView);
         }
@@ -198,6 +198,7 @@ public WebResourceResponse(String mimeType, String encoding, InputStream data) {
             String key = "http://localhost";
             final WebResourceResponse[] response = {null};
             if(url.contains(key)){
+	            //拿到文件地址
                 String imgPath = url.replace(key,"");
                 CacheEngine.getInstance().getLocalImgInMain(imgPath)
                         .subscribe(new Action1<byte[]>() {
@@ -213,11 +214,14 @@ public WebResourceResponse(String mimeType, String encoding, InputStream data) {
         }
     }
 ```
+ps:细心的朋友可能发现了的key是"http://localhost"而不是"file:///"，这是因为如果是在服务器的html文件后者会被webview主动拦截了，不会经过shouldInterceptRequest方法，所以我们假装成http协议就行了(这是我暂时的解决办法，如果有更好的可以提出来哈)
+## 方案的对比
+(图一为第三种方案。图四为第四种方案)
+![这里写图片描述](http://img.blog.csdn.net/20161129085442968)    ![这里写图片描述](http://img.blog.csdn.net/20161129085718781)
 
-这里有一点要注意的是：因为我们的img.src属性使用的地址是file:///开头的，所以如果是存在服务器下面的html，是无法经过shouldInterceptRequest函数的，所以我们可以自定义一个协议，比如:
-`<img src=\"http://locahost/sdcard0/picture/xxx.jpg\" height=\"70\" width=\"70\"/>`
-通过http请求头来欺骗webview，所以上面的代码我拦截的是"http://localhost".
-下面是第三种方案和第四种方案的对比：
 # 总结
-在我的手机上测试方案三和方案四，速度感觉都差不多(小米2)，不过总体上第四种方案还是比较适合实际运用的，另外有一点需要注意的是：第四种方案的shouldInterceptRequest是由webview默认在io线程工作，这也替我们省了不少事呀，所以博主还是比较推荐第四种方案的。
-github:(记得帮我start哦)
+总体来说个人比较喜欢第四种解决方式，因为搭配缓存系统不仅可以做到本地图片的压缩+缓存，还可以做到网络图片的缓存，只需要通过前缀名来判断是哪种图片即可，而且shouldInterceptRequest方法默认是在io线程工作的，就算你的图片有多大都不会阻塞主线程。另外有一个点要说的就是，上面我的缓存系统只用到了硬盘缓存，其实还可以再加一层内存缓存，那样效果就真的完美了(不过因为这种情景下图片的再利用率不高，所以没做内存缓存，如果是网络图片的加载的话，就很有必要使用内存缓存了)  
+文章中的代码(start哦谢谢)：[github地址](https://github.com/122627018/WebViewCacheModule)
+
+ - 
+
